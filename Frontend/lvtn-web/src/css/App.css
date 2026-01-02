@@ -1,0 +1,153 @@
+/* CSS đã sử dụng trong NLCN */
+* {
+  margin: 0;
+  padding: 0;
+}
+/* CSS cho phần background-image, overlay và content nằm trên background-image */
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.full-width-background {
+  background-size: cover;
+  background-position: center;
+  height: calc(100vh - var(--header-height));
+  width: 100%;
+  position: relative;
+}
+.full-width-background-nolimit {
+  background-size: cover;
+  background-position: center;
+  min-height: calc(100vh - var(--header-height));
+  width: 100%;
+  position: relative;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+.content {
+  position: relative; /* Định vị tương đối để văn bản nổi bật lên lớp phủ */
+  z-index: 1; /* Đảm bảo nội dung ở trên lớp phủ */
+}
+
+.full-width-content {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height));
+  max-height: 100vh;
+  width: 100%;
+}
+.long-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height));
+  max-height: none;
+  width: 100%;
+}
+.short-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height));
+  max-height: 100vh;
+  width: 100%;
+  overflow-y: hidden;
+}
+.centered-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.table-container {
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+.table-container.has-scrollbar {
+  justify-content: flex-start;
+}
+.carousel-container {
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  display: flex; /* Sử dụng flexbox */
+  justify-content: center; /* Căn giữa khi chưa có scrollbar */
+}
+.carousel-container.has-scrollbar {
+  justify-content: flex-start; /* Căn lề trái khi có scrollbar */
+}
+.navigation-bar {
+  width: 100%; /* Chiều rộng đầy đủ */
+  z-index: 1000; /* Đảm bảo header nằm trên các phần tử khác */
+}
+tr td {
+  min-height: 55px;
+}
+.dropdown-toggle::after {
+  position: absolute; /* Đặt vị trí tuyệt đối cho mũi tên */
+  right: 20px; /* Căn lề bên phải */
+  top: 50%; /* Căn giữa theo chiều dọc */
+  transform: translateY(-50%); /* Căn giữa chính xác */
+}
+.dropdown-menu {
+  position: absolute; /* Đặt vị trí của dropdown-menu là tuyệt đối */
+  z-index: 1000; /* Đảm bảo dropdown nằm trên các phần tử khác */
+  max-height: 200px; /* Chiều cao tối đa của dropdown */
+  overflow-y: auto; /* Hiện thanh cuộn dọc nếu cần */
+}
+.hidden {
+  display: none; /* Ẩn các phần tử khi không cần thiết */
+}
+table {
+  width: max-content;
+  /* Đảm bảo bảng sẽ mở rộng theo kích thước nội dung */
+  table-layout: auto;
+  /* Tự động điều chỉnh kích thước các cột dựa trên nội dung */
+}
+
+table th,
+table td {
+  white-space: nowrap;
+  /* Ngăn nội dung xuống dòng */
+}
+.select2-container .select2-selection--single {
+  height: 38px; /* Điều chỉnh chiều cao của select */
+  border-radius: 6px; /* Điều chỉnh độ cong của khung tìm kiếm */
+  border: 1px solid black; /* Bạn cũng có thể điều chỉnh màu viền */
+  color: black;
+}
+.select2-container .select2-selection--single .select2-selection__rendered {
+  line-height: 36px; /* Điều chỉnh căn giữa văn bản trong khung */
+  color: black;
+}
+
+.select2-container .select2-selection--single .select2-selection__arrow {
+  height: 36px; /* Điều chỉnh chiều cao của mũi tên dropdown */
+  border-radius: 0 6px 6px 0; /* Độ cong cho phần mũi tên */
+  color: black;
+}
+
+.select2-container .select2-results {
+  max-height: 200px; /* Chiều cao tối đa của dropdown */
+  overflow-y: auto; /* Hiển thị cuộn dọc nếu nội dung vượt quá chiều cao */
+  border-radius: 0 0 6px 6px; /* Độ cong cho dropdown */
+}
+
+.input-group > .input-group-text,
+.input-group > .form-select.w-auto {
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
+}
+button,
+a.btn {
+  min-width: 50px;
+}

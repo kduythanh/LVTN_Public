@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>reCAPTCHA Verification</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async
+            defer></script>
+
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+
+            #debug-message {
+                margin-bottom: 20px;
+                color: gray;
+                font-size: 14px;
+            }
+
+            #error-message {
+                color: red;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+        </style>
+
+    </head>
+
+    <body>
+        <div id="debug-message">Đang tải reCAPTCHA...</div>
+        <div id="error-message"></div>
+
+        <div id="recaptcha-container"></div>
+
+        <script>
+            const debugElement = document.getElementById('debug-message');
+            const errorElement = document.getElementById('error-message');
+
+            // 1. Hàm được gọi KHI reCAPTCHA SCRIPT tải xong
+            function onloadCallback() {
+                debugElement.innerText = "Vui lòng xác thực reCAPTCHA tại khung dưới đây:";
+                grecaptcha.render('recaptcha-container', {
+                    'sitekey': '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+                    'callback': onRecaptchaVerified,
+                    'expired-callback': onRecaptchaExpired,
+                    'error-callback': onRecaptchaError
+                });
+            }
+
+            // 2. Hàm này được gọi khi reCAPTCHA xác minh thành công
+            function onRecaptchaVerified(token) {
+                debugElement.innerText = "Xác minh thành công!";
+                console.log("reCAPTCHA Token:", token);
+
+                // Gửi token về Flutter
+                if (typeof RecaptchaChannel !== 'undefined' && RecaptchaChannel.postMessage) {
+                    RecaptchaChannel.postMessage(token);
+                } else if (window.flutter_inappwebview) {
+                    window.flutter_inappwebview.callHandler('RecaptchaChannel', token);
+                } else {
+                    errorElement.innerText = "LỖI: Không tìm thấy kênh giao tiếp Flutter.";
+                }
+            }
+
+            // 3. Hàm được gọi nếu reCAPTCHA hết hạn
+            function onRecaptchaExpired() {
+                debugElement.innerText = "reCAPTCHA Đã hết hạn. Vui lòng thử lại.";
+                console.log("reCAPTCHA Expired");
+            }
+
+            function onRecaptchaError() {
+                errorElement.innerText = "LỖI: reCAPTCHA không thể tải.";
+                if (typeof RecaptchaChannel !== 'undefined') {
+                    RecaptchaChannel.postMessage('ERROR_LOADING_RECAPTCHA');
+                }
+            }
+
+            setTimeout(() => {
+                if (typeof grecaptcha === 'undefined') {
+                    const message = "LỖI TẢI: reCAPTCHA Script không thể tải. Kiểm tra kết nối/tường lửa.";
+                    errorElement.innerText = message;
+                    debugElement.style.color = 'red';
+                    console.error(message);
+
+                    // Thử gửi thông báo lỗi về Flutter (nếu channel đã sẵn sàng)
+                    if (typeof RecaptchaChannel !== 'undefined' && RecaptchaChannel.postMessage) {
+                        RecaptchaChannel.postMessage('ERROR_LOADING_RECAPTCHA');
+                    }
+                } else {
+                    // Nếu grecaptcha có mặt, nhưng có vẻ nó không hiển thị (ví dụ: đã hết hạn)
+                    if (!document.querySelector('.g-recaptcha > iframe')) {
+                        // Trạng thái nếu reCAPTCHA chưa render iframe
+                        // debugElement.innerText = "Trạng thái: reCAPTCHA Script OK, nhưng widget chưa hiển thị.";
+                    }
+                }
+            }, 15000); // Đợi 15 giây
+        </script>
+
+    </body>
+
+</html>

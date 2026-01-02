@@ -1,0 +1,122 @@
+Nguyên tắc xét tuyển:
+// Chuẩn bị dữ liệu (Data structures)
+HocSinh gồm: maHS, soBaoDanh, diemUT, diemKK, diemKKChuyen, diemToan, diemVan, diemMonThu3, diemMonChuyen (thêm trường tổng điểm chung, tổng điểm chuyên, NVTrungTuyen)
+NguyenVong gồm: maHS, thuTu, maTHPT, các đặc trưng khác (nv2B, lopTiengPhap, maLopChuyen), ketQua
+TruongTHPT gồm: maTHPT, chiTieu (thêm trường DSHocSinhTrungTuyen)
+LopChuyenTHPT gồm: maTHPT, maLopChuyen, chiTieu (thêm trường DSHocSinhTrungTuyen)
+
+// Nguyên tắc xét tuyển:
+* Cách tính điểm:
+- Điểm chung: Toán + Văn + Môn thứ 3 + Ưu tiên + Khuyến khích
+- Điểm chuyên: Toán + Văn + Môn thứ 3 + 2*Chuyên + Khuyến khích Chuyên
+* Ràng buộc:
+- Trường xét bằng điểm thi chung: không có môn nào 0 điểm
+- Trường xét bằng điểm thi chuyên: không có môn nào dưới 5 điểm/ 10 điểm
+* Xếp thứ tự điểm:
+- Điểm thi chung: Xếp từ cao đến thấp cho đến đủ chỉ tiêu (đồng điểm ở các chỉ tiêu cuối cho phép trúng tuyển hết)
+- Điểm thi chuyên: Xếp từ cao đến thấp cho đến đủ chỉ tiêu (đồng điểm ở các chỉ tiêu cuối phân loại theo điểm thi chuyên)
+* Thí sinh không trúng tuyển chuyên (NV1) được hòa điểm để xét chung các trường còn lại (NV 2,3,4,5)
+
+Hàm tinhDiemChung(hs):
+    return hs.diemToan + hs.diemVan + hs.diemMonThu3 + hs.diemUT + hs.diemKK
+
+Hàm tinhDiemChuyen(hs):
+    return hs.diemToan + hs.diemVan + hs.diemMonThu3 + hs.diemMonChuyen + hs.diemKKChuyen
+
+Hàm dieuKienChung(hs):
+    // Không môn nào = 0
+    return hs.diemToan > 0 AND hs.diemVan > 0 AND hs.diemMonThu3 > 0
+
+Hàm dieuKienChuyen(hs):
+    // Không môn nào < 5
+    return hs.diemToan >= 5 AND hs.diemVan >= 5 AND hs.diemMonThu3 >= 5 AND hs.diemMonChuyen >= 5
+
+Hàm soSanhChung(a, b):
+    nếu tinhDiemChung(a) != tinhDiemChung(b) → so sánh giảm dần
+    return 0
+
+Hàm soSanhChuyen(a, b):
+    nếu tinhDiemChuyen(a) != tinhDiemChuyen(b) → so sánh giảm dần
+    nếu a.diemMonChuyen != b.diemMonChuyen → so sánh giảm dần
+    return 0
+
+Hàm xetTuyen(danhSachHocSinh, danhSachTruong, soNVToiDa):
+
+    // Bước 1: Reset dữ liệu
+    cho mỗi hs trong danhSachHocSinh:
+        hs.NVTrungTuyen = null
+    cho mỗi truong trong danhSachTruong:
+        truong.dsHocSinhTrungTuyen.clear()
+
+    // Bước 2: Xét NV1 chuyên (nếu trường có lớp chuyên)
+    cho mỗi lopChuyen trong danhSachLopChuyen:
+        danhSachUngVien = []
+        cho mỗi hs trong danhSachHocSinh:
+            nv1 = hs.danhSachNV.layNV(1)
+            nếu nv1 != null
+               và nv1.maTruong == lopChuyen.maTruong
+               và nv1.maLopChuyen == lopChuyen.maLopChuyen
+               và dieuKienChuyen(hs):
+                  danhSachUngVien.add(hs)
+
+        sapXep(danhSachUngVien, soSanhChuyen)
+
+        soLuong = min(lopChuyen.chiTieu, danhSachUngVien.size)
+        cho i từ 0 đến soLuong-1:
+            hs = danhSachUngVien[i]
+            hs.NVTrungTuyen = nv1
+            nv1.ketQua = "Đậu"
+            lopChuyen.dsHocSinhTrungTuyen.add(hs)
+
+        // điểm chuẩn là điểm của thí sinh cuối cùng được chọn trong quota
+        diemChuan = danhSachUngVien[soLuong-1].tongDiemChuyen
+        diemChuyen = danhSachUngVien[soLuong-1].diemChuyen
+
+        // xét thêm thí sinh đồng điểm với điểm chuẩn
+        cho i từ soLuong đến danhSachUngVien.size-1:
+            hs = danhSachUngVien[i]
+            nếu hs.tongDiemChuyen == diemChuan AND hs.diemChuyen == diemChuyen:
+                hs.NVTrungTuyen = nv1
+                nv1.ketQua = "Đậu"
+                lopChuyen.dsHocSinhTrungTuyen.add(hs)
+            ngược lại:
+                break   // vì danh sách đã sắp xếp, sau đó điểm sẽ thấp hơn
+
+    // Bước 3: Xét NV1..NVk theo diện chung
+    cho nvIndex từ 1 đến soNVToiDa:
+        cho mỗi truong trong danhSachTruong:
+            danhSachUngVien = []
+            cho mỗi hs trong danhSachHocSinh:
+                nếu hs.NVTrungTuyen == null:
+                    nv = hs.danhSachNV.layNV(nvIndex)
+                    nếu nv != null và nv.maTruong == truong.maTruong:
+                        nếu dieuKienChung(hs):
+                            danhSachUngVien.add(hs)
+
+            // sắp xếp theo điểm chung
+            sapXep(danhSachUngVien, soSanhChung)
+
+            // lấy theo chỉ tiêu còn lại
+            chiTieuConLai = truong.chiTieu - truong.dsHocSinhTrungTuyen.size
+            soLuong = min(chiTieuConLai, danhSachUngVien.size)
+            cho i từ 0 đến soLuong-1:
+                hs = danhSachUngVien[i]
+                hs.NVTrungTuyen = nv
+                nv.ketQua = "Đậu"
+                truong.dsHocSinhTrungTuyen.add(hs)
+
+            // điểm chuẩn là điểm của thí sinh cuối cùng được chọn trong quota
+            diemChuan = danhSachUngVien[soLuong-1].tongDiem
+
+            // xét thêm thí sinh đồng điểm với điểm chuẩn
+            cho i từ soLuong đến danhSachUngVien.size-1:
+                hs = danhSachUngVien[i]
+                nếu hs.tongDiem == diemChuan:
+                    hs.NVTrungTuyen = nv
+                    nv.ketQua = "Đậu"
+                    truong.dsHocSinhTrungTuyen.add(hs)
+                ngược lại:
+                    break   // vì danh sách đã sắp xếp, sau đó điểm sẽ thấp hơn
+
+    // Bước 4: Hoàn tất
+    return danhSachHocSinh, danhSachTruong
